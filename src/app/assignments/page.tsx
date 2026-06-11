@@ -130,8 +130,8 @@ function AssignmentCard({ a, studentId, onSubmitted }: { a: any; studentId: stri
               {aiLoading ? "Checking..." : "🤖 Check with AI"}
             </button>
             {aiResult && (
-              <div style={{ background: "var(--bg3)", borderColor: "var(--border)" }}
-                className="mt-3 border rounded-xl p-4 text-sm whitespace-pre-wrap" style={{ color: "var(--text)" }}>
+              <div style={{ background: "var(--bg3)", borderColor: "var(--border)", color: "var(--text)" }}
+                className="mt-3 border rounded-xl p-4 text-sm whitespace-pre-wrap">
                 {aiResult}
               </div>
             )}
