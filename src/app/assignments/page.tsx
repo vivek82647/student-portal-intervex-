@@ -8,6 +8,7 @@ import { getMyAssignments, submitAssignment, aiCheckAssignment } from "@/lib/api
 
 function AssignmentCard({ a, studentId, onSubmitted }: { a: any; studentId: string; onSubmitted: () => void }) {
   const [open, setOpen] = useState(false);
+  const [isResubmitting, setIsResubmitting] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -19,13 +20,23 @@ function AssignmentCard({ a, studentId, onSubmitted }: { a: any; studentId: stri
 
   const isOverdue = a.due_date && new Date(a.due_date) < new Date();
 
+  const handleOpenResubmit = () => {
+    setIsResubmitting(true);
+    setOpen(true);
+    setFile(null);
+    setError("");
+    setSuccess("");
+    setAiResult("");
+    setAiText("");
+  };
+
   const handleSubmit = async () => {
     if (!file) { setError("Please select a file"); return; }
     setError(""); setUploading(true);
     try {
       await submitAssignment(a.id, studentId, file);
-      setSuccess("Assignment submitted successfully! ✅");
-      setTimeout(() => { onSubmitted(); setOpen(false); }, 2000);
+      setSuccess(isResubmitting ? "Assignment resubmitted successfully! ✅" : "Assignment submitted successfully! ✅");
+      setTimeout(() => { onSubmitted(); setOpen(false); setIsResubmitting(false); }, 2000);
     } catch (e: any) {
       setError(e.message || "Upload failed");
     } finally {
@@ -83,9 +94,23 @@ function AssignmentCard({ a, studentId, onSubmitted }: { a: any; studentId: stri
             {open ? "Close" : "View & Submit"}
           </button>
         )}
+
+        {a.submitted && !isResubmitting && (
+          <button onClick={handleOpenResubmit}
+            className="text-sm text-orange-400 border border-orange-400/30 px-4 py-2 rounded-xl hover:bg-orange-400/10 transition-colors">
+            🔄 Resubmit / Change File
+          </button>
+        )}
+
+        {a.submitted && isResubmitting && (
+          <button onClick={() => { setIsResubmitting(false); setOpen(false); setError(""); setSuccess(""); }}
+            className="text-sm text-[#6C63FF] border border-[#6C63FF]/30 px-4 py-2 rounded-xl hover:bg-[#6C63FF]/10 transition-colors">
+            ✕ Cancel Resubmit
+          </button>
+        )}
       </div>
 
-      {open && !a.submitted && (
+      {open && (!a.submitted || isResubmitting) && (
         <div style={{ borderColor: "var(--border)" }} className="border-t p-5 space-y-5">
           {a.instructions && (
             <div>
@@ -96,7 +121,14 @@ function AssignmentCard({ a, studentId, onSubmitted }: { a: any; studentId: stri
 
           {/* File Upload */}
           <div>
-            <p style={{ color: "var(--muted)" }} className="text-xs uppercase tracking-wider mb-2">Submit File</p>
+            {isResubmitting && (
+              <div className="mb-3 px-3 py-2 rounded-xl bg-orange-400/10 border border-orange-400/20 text-orange-400 text-xs">
+                ⚠️ You are replacing your previously submitted file. New file will overwrite the old one.
+              </div>
+            )}
+            <p style={{ color: "var(--muted)" }} className="text-xs uppercase tracking-wider mb-2">
+              {isResubmitting ? "Upload New File" : "Submit File"}
+            </p>
             <p style={{ color: "var(--muted)" }} className="text-xs mb-2">Allowed: {a.allowed_file_types?.join(", ")}</p>
             <input ref={fileRef} type="file"
               accept={a.allowed_file_types?.map((t: string) => `.${t}`).join(",")}
@@ -111,7 +143,7 @@ function AssignmentCard({ a, studentId, onSubmitted }: { a: any; studentId: stri
               {file && (
                 <button onClick={handleSubmit} disabled={uploading}
                   className="px-5 rounded-xl bg-gradient-to-r from-[#6C63FF] to-[#00D4AA] text-white text-sm font-semibold disabled:opacity-50">
-                  {uploading ? "Uploading..." : "Submit"}
+                  {uploading ? "Uploading..." : isResubmitting ? "Resubmit" : "Submit"}
                 </button>
               )}
             </div>
