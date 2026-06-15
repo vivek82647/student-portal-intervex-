@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const GEMINI_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
@@ -391,15 +391,9 @@ Be specific to the actual content in the file.`;
                 </div>
 
                 {/* Expandable Submit Panel */}
-                <AnimatePresence>
+                
                   {openPanel === a.id && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
-                    >
+                    <div className="overflow-hidden">
                       <div className="border-t border-white/[0.07] p-5 space-y-4">
                         {/* Resubmit Warning */}
                         {isResubmitting === a.id && (
@@ -554,9 +548,9 @@ Be specific to the actual content in the file.`;
                           </button>
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   )}
-                </AnimatePresence>
+                
               </div>
             ))}
           </div>
